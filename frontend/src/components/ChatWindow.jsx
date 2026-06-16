@@ -128,7 +128,7 @@ const ChatWindow = ({ selectedUser }) => {
   return (
     <div className="flex-1 bg-gray-900 flex flex-col h-screen">
       {/* Chat Header */}
-      <div className="p-4 border-b border-gray-700 bg-gray-800 flex items-center gap-3">
+      <div className="h-[72px] px-4 border-b border-gray-700 bg-gray-800 flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
           {selectedUser.username[0].toUpperCase()}
         </div>

@@ -15,7 +15,7 @@ const Sidebar = ({ users, selectedUser, onSelectUser }) => {
   return (
     <div className="w-80 bg-gray-800 h-screen flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+      <div className="h-[72px] px-4 border-b border-gray-700 flex items-center justify-between">
         <div>
           <h1 className="text-white font-bold text-xl">💬 ChatterBox</h1>
           <p className="text-gray-400 text-sm">@{user?.username}</p>
