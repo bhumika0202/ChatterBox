@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Chat from './pages/Chat';
@@ -27,13 +28,15 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </SocketProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </SocketProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
