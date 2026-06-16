@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { themes } from '../utils/theme';
@@ -8,6 +8,7 @@ const ProfileModal = ({ onClose }) => {
   const { user, login } = useAuth();
   const { theme } = useTheme();
   const t = themes[theme];
+  const fileInputRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('profile');
   const [form, setForm] = useState({
@@ -19,9 +20,45 @@ const ProfileModal = ({ onClose }) => {
     newPassword: '',
     confirmPassword: '',
   });
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
+  const [avatarFile, setAvatarFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  // Handle avatar file select
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      return setError('Image must be less than 5MB');
+    }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  // Upload avatar
+  const handleAvatarUpload = async () => {
+    if (!avatarFile) return;
+    setAvatarLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const formData = new FormData();
+      formData.append('avatar', avatarFile);
+      const { data } = await axios.post('/users/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      login({ ...user, avatar: data.avatar });
+      setSuccess('Profile picture updated!');
+      setAvatarFile(null);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
 
   const handleUpdateProfile = async () => {
     setLoading(true);
@@ -88,13 +125,54 @@ const ProfileModal = ({ onClose }) => {
 
         {/* Avatar Section */}
         <div className="flex flex-col items-center py-6">
-          <div className={`w-20 h-20 rounded-full ${t.accentAvatar} flex items-center justify-center text-white font-bold text-3xl mb-3`}>
-            {user?.username[0].toUpperCase()}
+          {/* Avatar with click to change */}
+          <div className="relative group cursor-pointer mb-3"
+            onClick={() => fileInputRef.current.click()}
+          >
+            {avatarPreview ? (
+              <img
+                src={avatarPreview}
+                alt="avatar"
+                className="w-20 h-20 rounded-full object-cover"
+              />
+            ) : (
+              <div className={`w-20 h-20 rounded-full ${t.accentAvatar} flex items-center justify-center text-white font-bold text-3xl`}>
+                {user?.username[0].toUpperCase()}
+              </div>
+            )}
+            {/* Overlay on hover */}
+            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+              <span className="text-white text-xs font-semibold">Change</span>
+            </div>
           </div>
-          <p className={`${t.textPrimary} font-semibold text-lg`}>
+
+          {/* Hidden file input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleAvatarChange}
+            accept="image/*"
+            className="hidden"
+          />
+
+          {/* Upload button — only shows when new image selected */}
+          {avatarFile && (
+            <button
+              onClick={handleAvatarUpload}
+              disabled={avatarLoading}
+              className={`mt-2 px-4 py-1.5 ${t.accent} ${t.accentHover} text-white text-xs rounded-lg font-semibold transition disabled:opacity-50`}
+            >
+              {avatarLoading ? 'Uploading...' : 'Upload Photo'}
+            </button>
+          )}
+
+          <p className={`${t.textPrimary} font-semibold text-lg mt-2`}>
             {user?.username}
           </p>
           <p className={`${t.textSecondary} text-sm`}>{user?.email}</p>
+          <p className={`${t.textSecondary} text-xs mt-1`}>
+            Click on photo to change
+          </p>
         </div>
 
         {/* Tabs */}
@@ -134,7 +212,6 @@ const ProfileModal = ({ onClose }) => {
             </div>
           )}
 
-          {/* Edit Profile Tab */}
           {activeTab === 'profile' && (
             <div className="space-y-4">
               <div>
@@ -169,7 +246,6 @@ const ProfileModal = ({ onClose }) => {
             </div>
           )}
 
-          {/* Change Password Tab */}
           {activeTab === 'password' && (
             <div className="space-y-4">
               <div>

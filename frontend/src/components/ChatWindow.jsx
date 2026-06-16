@@ -122,9 +122,17 @@ const ChatWindow = ({ selectedUser }) => {
     <div className={`flex-1 ${t.bgMain} flex flex-col h-screen`}>
       {/* Header */}
       <div className={`h-[72px] px-4 ${t.bgHeader} flex items-center gap-3 shadow-sm`}>
-        <div className={`w-10 h-10 rounded-full ${t.accentAvatar} flex items-center justify-center text-white font-bold`}>
-          {selectedUser.username[0].toUpperCase()}
-        </div>
+        {selectedUser.avatar ? (
+          <img
+            src={selectedUser.avatar}
+            alt={selectedUser.username}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+          <div className={`w-10 h-10 rounded-full ${t.accentAvatar} flex items-center justify-center text-white font-bold`}>
+            {selectedUser.username[0].toUpperCase()}
+          </div>
+        )}
         <div>
           <p className={`${t.textPrimary} font-semibold`}>
             {selectedUser.username}
