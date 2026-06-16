@@ -2,12 +2,26 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const User = require('../models/User');
+const { upload } = require('../config/cloudinary');
+
 
 // Get all users
 router.get('/', protect, async (req, res) => {
   try {
     const users = await User.find({ _id: { $ne: req.user._id } }).select('-password');
     res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Upload avatar
+router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.avatar = req.file.path;
+    await user.save();
+    res.json({ avatar: user.avatar });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
