@@ -8,6 +8,7 @@ const ChatWindow = ({ selectedUser }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const { user } = useAuth();
   const { socket } = useSocket();
   const bottomRef = useRef(null);
@@ -17,12 +18,15 @@ const ChatWindow = ({ selectedUser }) => {
   useEffect(() => {
     if (!selectedUser) return;
     setMessages([]);
+    setLoadingMessages(true);
     const fetchMessages = async () => {
       try {
         const { data } = await axios.get(`/messages/${selectedUser._id}`);
         setMessages(data);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoadingMessages(false);
       }
     };
     fetchMessages();
@@ -140,20 +144,24 @@ const ChatWindow = ({ selectedUser }) => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-4xl mb-3">👋</p>
-            <p className="text-gray-400 text-sm">
-              No messages yet. Say hello to {selectedUser.username}!
-            </p>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <MessageBubble key={msg._id} message={msg} />
-          ))
-        )}
-        <div ref={bottomRef} />
-      </div>
+            {loadingMessages ? (
+                <div className="flex items-center justify-center h-full">
+                <p className="text-gray-400 animate-pulse">Loading messages...</p>
+                </div>
+            ) : messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full">
+                <p className="text-4xl mb-3">👋</p>
+                <p className="text-gray-400 text-sm">
+                    No messages yet. Say hello to {selectedUser.username}!
+                </p>
+                </div>
+            ) : (
+                messages.map((msg) => (
+                <MessageBubble key={msg._id} message={msg} />
+                ))
+            )}
+            <div ref={bottomRef} />
+        </div>
 
       {/* Message Input */}
       <div className="p-4 border-t border-gray-700 bg-gray-800">
