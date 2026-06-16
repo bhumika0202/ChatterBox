@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useTheme } from '../context/ThemeContext';
 import { themes } from '../utils/theme';
+import ProfileModal from './ProfileModel';
 
 const Sidebar = ({ users, selectedUser, onSelectUser }) => {
   const { user, logout } = useAuth();
@@ -12,7 +13,7 @@ const Sidebar = ({ users, selectedUser, onSelectUser }) => {
   const t = themes[theme];
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [showProfile, setShowProfile] = useState(false);
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -20,6 +21,9 @@ const Sidebar = ({ users, selectedUser, onSelectUser }) => {
 
   return (
     <div className={`w-80 ${t.bgSidebar} h-screen flex flex-col shadow-lg`}>
+      {showProfile && (
+        <ProfileModal onClose={() => setShowProfile(false)} />
+      )}
       {/* Header */}
       <div className={`h-[72px] px-4 ${t.bgHeader} flex items-center justify-between`}>
         <h1 className={`${t.textPrimary} font-bold text-xl`}>
@@ -39,13 +43,14 @@ const Sidebar = ({ users, selectedUser, onSelectUser }) => {
           {menuOpen && (
             <div className={`absolute right-0 top-10 w-48 ${t.bgSidebar} rounded-xl shadow-xl z-50 overflow-hidden border ${t.border}`}>
               
-              {/* Profile */}
-              <div className={`px-4 py-3 border-b ${t.border}`}>
-                <p className={`${t.textPrimary} font-semibold text-sm`}>
-                  {user?.username}
-                </p>
-                <p className={`${t.textSecondary} text-xs`}>{user?.email}</p>
-              </div>
+              {/* Profile Option */}
+              <button
+                onClick={() => { setShowProfile(true); setMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 ${t.bgHover} ${t.textPrimary} text-sm transition`}
+              >
+                <span>👤</span>
+                <span>Profile</span>
+              </button>
 
               {/* Theme Toggle */}
               <button
