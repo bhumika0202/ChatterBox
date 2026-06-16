@@ -16,6 +16,7 @@ const ChatWindow = ({ selectedUser }) => {
   // Fetch message history
   useEffect(() => {
     if (!selectedUser) return;
+    setMessages([]);
     const fetchMessages = async () => {
       try {
         const { data } = await axios.get(`/messages/${selectedUser._id}`);
@@ -82,6 +83,7 @@ const ChatWindow = ({ selectedUser }) => {
 
   // Typing indicator
   const handleTyping = (e) => {
+    if (e.target.value.length > 500) return;
     setInput(e.target.value);
 
     socket?.emit('typing', {
@@ -107,9 +109,13 @@ const ChatWindow = ({ selectedUser }) => {
     return (
       <div className="flex-1 bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-5xl mb-4">💬</p>
-          <p className="text-white text-xl font-semibold">Welcome to ChatterBox</p>
-          <p className="text-gray-400 mt-2">Select a user to start chatting</p>
+          <p className="text-6xl mb-4">💬</p>
+          <p className="text-white text-xl font-semibold">
+            Welcome to ChatterBox
+          </p>
+          <p className="text-gray-400 mt-2">
+            Select a user from the sidebar to start chatting
+          </p>
         </div>
       </div>
     );
@@ -124,8 +130,10 @@ const ChatWindow = ({ selectedUser }) => {
         </div>
         <div>
           <p className="text-white font-semibold">{selectedUser.username}</p>
-          {isTyping && (
-            <p className="text-green-400 text-xs">typing...</p>
+          {isTyping ? (
+            <p className="text-yellow-400 text-xs animate-pulse">typing...</p>
+          ) : (
+            <p className="text-gray-400 text-xs">Click to chat</p>
           )}
         </div>
       </div>
@@ -133,9 +141,12 @@ const ChatWindow = ({ selectedUser }) => {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
-          <p className="text-gray-500 text-center mt-10">
-            No messages yet. Say hello! 👋
-          </p>
+          <div className="flex flex-col items-center justify-center h-full">
+            <p className="text-4xl mb-3">👋</p>
+            <p className="text-gray-400 text-sm">
+              No messages yet. Say hello to {selectedUser.username}!
+            </p>
+          </div>
         ) : (
           messages.map((msg) => (
             <MessageBubble key={msg._id} message={msg} />
@@ -145,21 +156,31 @@ const ChatWindow = ({ selectedUser }) => {
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-gray-700 bg-gray-800 flex gap-3">
-        <input
-          type="text"
-          value={input}
-          onChange={handleTyping}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          className="flex-1 bg-gray-700 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={sendMessage}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition"
-        >
-          Send
-        </button>
+      <div className="p-4 border-t border-gray-700 bg-gray-800">
+        <div className="flex gap-3 items-center">
+          <input
+            type="text"
+            value={input}
+            onChange={handleTyping}
+            onKeyDown={handleKeyDown}
+            placeholder={`Message ${selectedUser.username}...`}
+            maxLength={500}
+            className="flex-1 bg-gray-700 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+          />
+          <button
+            onClick={sendMessage}
+            disabled={!input.trim()}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-semibold transition"
+          >
+            Send
+          </button>
+        </div>
+        {/* Character count */}
+        {input.length > 400 && (
+          <p className="text-right text-xs text-gray-500 mt-1">
+            {500 - input.length} characters remaining
+          </p>
+        )}
       </div>
     </div>
   );
